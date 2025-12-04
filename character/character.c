@@ -2,12 +2,16 @@
 #include <linux/kernel.h>
 #include <linux/fs.h>       
 #include <linux/cdev.h>
+#include <linux/device.h>
+#include <linux/kdev_t.h>
 #define DRIVER_NAME "hieu_driver"
 #define DEVICE_COUNT 1
 //khai bao luu major minor number
 static dev_t dev_num;
 //khai bao struct cdev
 static struct cdev my_cdev;
+static struct class *my_class;
+static struct device *my_device;
 //dinh nghia file operations
 static int my_open(struct inode *inode, struct file *file)
 {
@@ -65,6 +69,21 @@ static int __init chardev_init(void)
         unregister_chrdev_region(dev_num, DEVICE_COUNT);
         return ret;
     }
+    my_class = class_create(DRIVER_NAME);
+    if (IS_ERR(my_class)) {
+        printk(KERN_ERR "%s: Failed to create device class.\n", DRIVER_NAME);
+        cdev_del(&my_cdev);
+        unregister_chrdev_region(dev_num, DEVICE_COUNT);
+        return PTR_ERR(my_class);
+    }
+    my_device = device_create(my_class, NULL, dev_num, NULL, DRIVER_NAME);
+    if (IS_ERR(my_device)) {
+        printk(KERN_ERR "%s: Failed to create device.\n", DRIVER_NAME);
+        class_destroy(my_class);
+        cdev_del(&my_cdev);
+        unregister_chrdev_region(dev_num, DEVICE_COUNT);
+        return PTR_ERR(my_device);
+    }
     
     printk(KERN_INFO "%s: Module initialized successfully.\n", DRIVER_NAME);
     return 0;
@@ -72,6 +91,8 @@ static int __init chardev_init(void)
 //xoa device file
 static void __exit chardev_exit(void)
 {
+    device_destroy(my_class,dev_num);
+    class_destroy(my_class);
     cdev_del(&my_cdev);
     
     unregister_chrdev_region(dev_num, DEVICE_COUNT);
