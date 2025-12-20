@@ -4,10 +4,10 @@
 #include <linux/cdev.h>
 #include <linux/device.h>
 #include <linux/kdev_t.h>
-#include <linux/uaccess.h>   /* Thư viện cho nhân Linux mới */
+#include <linux/uaccess.h>   
 #include <linux/gpio.h>
-#include <linux/of.h>        /* Thư viện Device Tree */
-#include <linux/of_gpio.h>   /* Thư viện lấy GPIO từ Device Tree */
+#include <linux/of.h>       
+#include <linux/of_gpio.h>   
 
 #define DRIVER_NAME "hieu_driver"
 #define DEVICE_COUNT 1
@@ -36,26 +36,18 @@ static const struct file_operations fops = {
 static int __init chardev_init(void) {
     struct device_node *dn;
     int ret;
-
-    // 1. Tìm node hieu_led_node trong Device Tree
     dn = of_find_node_by_path("/hieu_led_node");
     if (!dn) {
         printk(KERN_ERR "hieu_driver: Khong tim thay node trong DT\n");
         return -ENODEV;
     }
-
-    // 2. Lấy số hiệu GPIO từ Node
     gpio_num = of_get_named_gpio(dn, "gpios", 0);
     if (gpio_num < 0) return gpio_num;
-
-    // 3. Đăng ký Character Device và tự động tạo file /dev/hieu_driver
     alloc_chrdev_region(&dev_num, 0, DEVICE_COUNT, DRIVER_NAME);
     cdev_init(&my_cdev, &fops);
     cdev_add(&my_cdev, dev_num, DEVICE_COUNT);
     my_class = class_create(DRIVER_NAME);
     my_device = device_create(my_class, NULL, dev_num, NULL, DRIVER_NAME);
-
-    // 4. Yêu cầu quyền điều khiển GPIO
     gpio_request_one(gpio_num, GPIOF_OUT_INIT_LOW, DRIVER_NAME);
     
     printk(KERN_INFO "hieu_driver: Da lien ket voi GPIO %d tu Device Tree\n", gpio_num);
