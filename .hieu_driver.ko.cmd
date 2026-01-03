@@ -1,1 +1,0 @@
-savedcmd_/home/hieu/hoclinux/led/hieu_driver.ko := aarch64-linux-gnu-ld -r -EL  -maarch64elf -z noexecstack --no-warn-rwx-segments --build-id=sha1  -T arch/arm64/module.lds -o /home/hieu/hoclinux/led/hieu_driver.ko /home/hieu/hoclinux/led/hieu_driver.o /home/hieu/hoclinux/led/hieu_driver.mod.o /home/hieu/hoclinux/led/.module-common.o
