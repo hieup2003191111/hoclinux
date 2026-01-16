@@ -1,0 +1,17 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+    compatible = "brcm,bcm2708"; 
+
+    // Khai báo nút thiết bị LED của bạn
+    hieu_led: hieu_led { 
+        compatible = "hieu,simple-led"; 
+        
+        // Thuộc tính GPIO quan trọng: Ánh xạ tới GPIO BCM 23
+        // Cú pháp: &controller <pin_number> <flags>;
+        led-gpio = <&gpio 23 0>; // Đảm bảo có dấu chấm phẩy ;
+        
+        status = "okay"; // Bật thiết bị này
+    };
+};

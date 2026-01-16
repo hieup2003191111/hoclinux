@@ -1,50 +1,29 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <pthread.h>
 #include <unistd.h>
 #include <semaphore.h>
-
-#define MAX_RES 3
-#define NUM_THREAD 5
-//khai bao semaphore
-sem_t res_semaphore;
-
+sem_t lock;
 void *work(void *arg){
-    long tid = (long)arg;
-    printf(" luong %ld dang cho \n",tid);
-    //yeu cau slot,bo dem <=0 thi bi block
-    sem_wait(&res_semaphore);
-    printf("luong %ld dang dung tai nguyen \n",tid);
-    sleep(5);
-    printf("luong %ld hoan thanh su dung \n",tid);
-    //giai phong slot
-    sem_post(&res_semaphore);
-    pthread_exit(NULL);
+    int id = *(int *)(arg);
+    printf("thread %d wait \n",id);
+    sem_wait(&lock);
+    printf("thread %d start \n",id);
+    sleep(2);
+    printf("thread %d leave \n",id);
+    sem_post(&lock);
+    return NULL;
 }
-
 int main(){
-    //mang thread
-    pthread_t threads[NUM_THREAD];
-    int ret;
-    //khoi tao semaphore
-    ret = sem_init(&res_semaphore,0,MAX_RES);
-    if(ret != 0){
-        perror("loi khoi tao /n");
-        return EXIT_FAILURE;
-
+    sem_init(&lock,0,3);
+    int id[11];
+    pthread_t T[11];
+    for(int i=1;i<=10;i++){     
+        id[i]=i;  
+        pthread_create(&T[i],NULL,work,&id[i]);
     }
-    printf("%d luong co the truy cap \n",NUM_THREAD);
-    // Tạo 5 luong
-    for (long i = 0; i < NUM_THREAD; i++) {
-        pthread_create(&threads[i], NULL, work,(void *)(i + 1));
+    for(int i=1;i<=10;i++){       
+        pthread_join(T[i],NULL);
     }
-
-    // ket thuc 5 luong
-    for (int i = 0; i < NUM_THREAD; i++) {
-        pthread_join(threads[i], NULL);
-    }
-    //huy semaphore
-    sem_destroy(&res_semaphore);
-    printf("tat ca luong hoan thanh");
-    return EXIT_FAILURE;
+    sem_destroy(&lock);
+    return 0;
 }
