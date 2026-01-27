@@ -17,6 +17,8 @@ int main(){
     sem_init(&lock,0,3);
     int id[11];
     pthread_t T[11];
+    sem_post(&lock);
+    printf("tra 1 lock du khong giu lock \n");
     for(int i=1;i<=10;i++){     
         id[i]=i;  
         pthread_create(&T[i],NULL,work,&id[i]);
